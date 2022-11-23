@@ -1,6 +1,6 @@
 package com.example.file;
 
-import java.io.File;
+import java.io.*;
 
 public class FileService {
 
@@ -12,8 +12,26 @@ public class FileService {
         output = new File(outputPath);
     }
 
-    public String getFileContent(){
-        return null;
+    public String getFileContent() throws IOException {
+        if(!input.exists()) {
+            throw new IOException("Input file not found");
+        }
+
+        BufferedReader reader = new BufferedReader(new FileReader(input));
+
+        StringBuilder sb = new StringBuilder();
+        String str = null;
+
+        while((str = reader.readLine())!=null) {
+            sb.append(str);
+        }
+        reader.close();
+        return sb.toString();
     }
 
+    public void writeFile(String json) throws IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(output));
+        writer.write(json);
+        writer.close();
+    }
 }

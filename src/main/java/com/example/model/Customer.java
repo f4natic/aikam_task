@@ -1,5 +1,6 @@
 package com.example.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -11,7 +12,9 @@ import java.util.List;
 @Entity(name = "Customer")
 @Table(name="customers")
 @NoArgsConstructor
+@JsonIgnoreProperties({"id", "products"})
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@EqualsAndHashCode
 public class Customer {
 
     @Id
@@ -25,7 +28,7 @@ public class Customer {
     @Column(name="surname")
     private String surname;
 
-    @ManyToMany
+    @ManyToMany(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(
             name = "purchases",
             joinColumns = @JoinColumn(name = "customer_id"),
@@ -43,10 +46,5 @@ public class Customer {
         this.id=id;
         this.name = name;
         this.surname = surname;
-    }
-
-    @Override
-    public String toString() {
-        return String.format("Customer [id = %d, name = %s, surname = %s", id, name, surname);
     }
 }
