@@ -2,9 +2,11 @@ package com.example;
 
 import com.example.file.FileService;
 import com.example.message.ErrorMessage;
+import com.example.message.InputMessage;
 import com.example.model.Customer;
 import com.example.model.Product;
 import com.example.model.Purchase;
+import com.example.service.MessageService;
 import com.example.service.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hibernate.SessionFactory;
@@ -14,38 +16,54 @@ import java.io.File;
 import java.io.IOException;
 
 public class Application {
+    private static SessionFactory sessionFactory;
     private static ObjectMapper mapper;
+    private static FileService fileService;
 
     public Application() {
         mapper = new ObjectMapper();
-    }
-
-    public void initApp() {
-        SessionFactory sessionFactory = new Configuration()
-                .addAnnotatedClass(Customer.class)
-                .addAnnotatedClass(Product.class)
-                .addAnnotatedClass(Purchase.class)
-                .buildSessionFactory();
-
-        Service service = new Service(sessionFactory);
-        sessionFactory.close();
     }
 
     public static void main(String[] args) {
         Application app = new Application();
 
         try {
-            if(args.length == 0 || args.length < 3) {
+            if(args.length == 0 || args.length < 3 || !checkMeth(args[0])) {
                 mapper.writeValue(new File("error.json"), new ErrorMessage("Wrong input value..."));
                 return;
-            }else if(!args[0].equals("search") || !args[0].equals("stat")) {
-                mapper.writeValue(new File("error.json"), new ErrorMessage("Wrong param request (only search or stat..."));
-                return;
             }
-            FileService fileService = new FileService(args[1], args[2]);
 
-        }catch (IOException e) {
-            e.printStackTrace();
+            fileService = new FileService(args[1], args[2]);
+
+            InputMessage inputMessage = mapper.readValue(fileService.getFileContent(), InputMessage.class);
+
+            sessionFactory = new Configuration()
+                    .addAnnotatedClass(Customer.class)
+                    .addAnnotatedClass(Product.class)
+                    .addAnnotatedClass(Purchase.class)
+                    .buildSessionFactory();
+
+            Service service = new Service(sessionFactory, fileService, mapper);
+
+            MessageService messageService = new MessageService(args[0], service, inputMessage, fileService, mapper);
+            messageService.run();
+            sessionFactory.close();
+        }catch (Exception e) {
+            try {
+                mapper.writeValue(new File("error.json"), new ErrorMessage(e.getMessage()));
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        } finally {
+            sessionFactory.close();
         }
+    }
+
+    private static boolean checkMeth(String line) {
+
+        if(line.equals("search") || line.equals("stat")) {
+            return true;
+        }
+        return false;
     }
 }

@@ -1,6 +1,8 @@
 package com.example.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
@@ -10,6 +12,8 @@ import java.util.List;
 @Entity(name="Product")
 @Table(name="products")
 @NoArgsConstructor
+@EqualsAndHashCode
+@JsonIgnoreProperties({"id", "customers"})
 public class Product {
 
     @Id
@@ -23,7 +27,7 @@ public class Product {
     @Column(name="price")
     private Double price;
 
-    @ManyToMany
+    @ManyToMany(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(
             name = "purchases",
             joinColumns = @JoinColumn(name = "product_id"),
@@ -34,10 +38,5 @@ public class Product {
     public Product(String name, Double price) {
         this.name = name;
         this.price = price;
-    }
-
-    @Override
-    public String toString() {
-        return String.format("Product [id = %d, name = %s, price = %f", id, name, price);
     }
 }
