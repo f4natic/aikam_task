@@ -13,4 +13,5 @@ public class Criteria {
     private Double minExpenses;
     private Double maxExpenses;
     private Integer badCustomers;
+
 }

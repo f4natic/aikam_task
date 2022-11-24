@@ -1,6 +1,6 @@
 package com.example;
 
-import com.example.file.FileService;
+import com.example.service.FileService;
 import com.example.message.ErrorMessage;
 import com.example.message.InputMessage;
 import com.example.model.Customer;
@@ -9,6 +9,7 @@ import com.example.model.Purchase;
 import com.example.service.MessageService;
 import com.example.service.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
@@ -22,6 +23,8 @@ public class Application {
 
     public Application() {
         mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+//        mapper.configure(SerializationFeature.WRITE_DATE_KEYS_AS_TIMESTAMPS, false);
     }
 
     public static void main(String[] args) {

@@ -1,6 +1,5 @@
 package com.example.service;
 
-import com.example.file.FileService;
 import com.example.message.ErrorMessage;
 import com.example.model.Customer;
 import com.example.model.Product;
@@ -11,7 +10,6 @@ import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
 
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -69,7 +67,14 @@ public class Service {
         return customers;
     }
 
-    public List<Customer> getCustomersByStat(LocalDate beginDate, LocalDate endDate) {
-        return null;
+    public List<Customer> getCustomersByStat(LocalDate beginDate, LocalDate endDate) throws IOException {
+        List<Customer> customers = null;
+        try {
+            customers = repository.getCustomersByStat(beginDate, endDate);
+
+        }catch (HibernateException e) {
+            fileService.writeFile(mapper.writeValueAsString(new ErrorMessage(e.getMessage())));
+        }
+        return customers;
     }
 }
