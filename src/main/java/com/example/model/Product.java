@@ -34,7 +34,7 @@ public class Product {
             inverseJoinColumns = @JoinColumn(name = "customer_id")
     )
     private List<Customer> customers;
-
+//    private Double expences;
     public Product(String name, Double price) {
         this.name = name;
         this.price = price;

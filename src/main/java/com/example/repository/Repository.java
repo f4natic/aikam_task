@@ -2,6 +2,7 @@ package com.example.repository;
 
 import com.example.model.Customer;
 import com.example.model.Product;
+import com.example.model.Result;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -69,17 +70,18 @@ public class Repository {
         return badCustomers;
     }
 
-    public List<Customer> getCustomersByStat(LocalDate beginDate, LocalDate endDate) throws HibernateException {
+    public List<Result> getCustomersByStat(LocalDate beginDate, LocalDate endDate) throws HibernateException {
         session = sessionFactory.getCurrentSession();
         session.beginTransaction();
-        List<Customer> customerList = session
-                .createQuery("SELECT cs FROM Customer cs, Purchase pc WHERE cs.id = pc.customer.id AND pc.date between :startDate AND :endDate", Customer.class)
+        List<Result> results = session
+                .createQuery("SELECT new com.example.model.Result(cs, pr.name, sum(pr.price)) FROM Customer cs, Product pr, Purchase pc WHERE cs.id = pc.customer.id AND pc.date between :startDate AND :endDate group by cs, pr.name", Result.class)
                 .setParameter("startDate", Timestamp.valueOf(beginDate.atStartOfDay()))
                 .setParameter("endDate", Timestamp.valueOf(endDate.atStartOfDay()))
-                .getResultList();
+                .list();
+
         session.getTransaction().commit();
         session.close();
 
-        return customerList;
+        return results;
     }
 }

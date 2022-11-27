@@ -1,8 +1,7 @@
 package com.example.service;
 
 import com.example.message.ErrorMessage;
-import com.example.model.Customer;
-import com.example.model.Product;
+import com.example.model.*;
 import com.example.repository.Repository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,7 +10,7 @@ import org.hibernate.SessionFactory;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.List;
+import java.util.*;
 
 public class Service {
 
@@ -67,14 +66,36 @@ public class Service {
         return customers;
     }
 
-    public List<Customer> getCustomersByStat(LocalDate beginDate, LocalDate endDate) throws IOException {
-        List<Customer> customers = null;
+    // Решение не очень оптимальное и красивое, можно подумать над сущностями и заставить БД это все делать
+    public List<StatResult> getCustomersByStat(LocalDate beginDate, LocalDate endDate) throws IOException {
+        List<Result> results = null;
+        List<StatResult> statResultList = new ArrayList<>();
         try {
-            customers = repository.getCustomersByStat(beginDate, endDate);
+            results = repository.getCustomersByStat(beginDate, endDate);
+            Map<String, Set<Purchases>> transformCustomer = new HashMap<>();
+            for(Result r: results) {
+                if(!transformCustomer.containsKey(r.getCustomer().getSurname() + " " + r.getCustomer().getName())) {
+                    transformCustomer.put(r.getCustomer().getSurname() + " " + r.getCustomer().getName(),new HashSet<>());
+                    transformCustomer.get(r.getCustomer().getSurname() + " " + r.getCustomer().getName()).add(new Purchases(r.getProductName(), r.getTotal()));
+                }else {
+                    transformCustomer.get(r.getCustomer().getSurname() + " " + r.getCustomer().getName()).add(new Purchases(r.getProductName(), r.getTotal()));
+                }
+            }
+
+            for(String key : transformCustomer.keySet()) {
+                StatResult res = new StatResult();
+                res.setName(key);
+                res.setPurchases(transformCustomer.get(key));
+                statResultList.add(res);
+            }
+
+            for(StatResult sr:statResultList) {
+                sr.countTotalExpenses();
+            }
 
         }catch (HibernateException e) {
             fileService.writeFile(mapper.writeValueAsString(new ErrorMessage(e.getMessage())));
         }
-        return customers;
+        return statResultList;
     }
 }

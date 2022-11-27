@@ -5,8 +5,12 @@ import com.example.criteria.CriteriaResult;
 import com.example.message.InputMessage;
 import com.example.message.OutputMessage;
 import com.example.model.Customer;
+import com.example.model.Product;
+import com.example.model.StatResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,9 +34,9 @@ public class MessageService {
         List<Criteria> criterias = inputMessage.getCriterias();
         OutputMessage outputMessage = new OutputMessage();
         outputMessage.setType(type);
-        outputMessage.setResults(new ArrayList<>());
 
         if(type.equals("search")) {
+            outputMessage.setResults(new ArrayList<>());
             for(Criteria c : criterias) {
                 if(c.getLastName() != null) {
                     CriteriaResult result = new CriteriaResult();
@@ -65,10 +69,22 @@ public class MessageService {
             if(inputMessage.getStartDate().isAfter(inputMessage.getEndDate())) {
                 throw new Exception("дата начала поиска не может быть больше даты окончания поиска...");
             }
+            outputMessage.setType(type);
+            long totalDate = inputMessage.getEndDate().toEpochDay()-inputMessage.getStartDate().toEpochDay();
+            outputMessage.setTotalDays(totalDate);
 
-            long numDate = inputMessage.getEndDate().toEpochDay()-inputMessage.getStartDate().toEpochDay();
-
-            List<Customer> customers = service.getCustomersByStat(inputMessage.getStartDate(), inputMessage.getEndDate());
+            List<StatResult> customers = service.getCustomersByStat(inputMessage.getStartDate(), inputMessage.getEndDate());
+            outputMessage.setCustomers(customers);
+            double totalExpenses = 0;
+            long purchasesTotalSize = 0;
+            for(StatResult sr:customers) {
+                purchasesTotalSize +=sr.getPurchases().size();
+                totalExpenses += sr.getTotalExpenses();
+            }
+            double avg = totalExpenses / purchasesTotalSize;
+            BigDecimal bd = new BigDecimal(avg).setScale(2, RoundingMode.FLOOR);
+            outputMessage.setTotalExpenses(totalExpenses);
+            outputMessage.setAvgExpenses(bd.doubleValue());
         }
 
         fileService.writeFile(mapper.writeValueAsString(outputMessage));
