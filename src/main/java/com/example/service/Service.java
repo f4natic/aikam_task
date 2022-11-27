@@ -5,6 +5,7 @@ import com.example.model.*;
 import com.example.repository.Repository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Setter;
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
 
@@ -14,6 +15,7 @@ import java.util.*;
 
 public class Service {
 
+    @Setter
     private Repository repository;
     private FileService fileService;
     private ObjectMapper mapper;

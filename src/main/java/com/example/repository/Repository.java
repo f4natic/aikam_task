@@ -11,7 +11,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.List;
 
-public class Repository {
+public class Repository implements IRepository {
 
     private SessionFactory sessionFactory;
     private Session session;
