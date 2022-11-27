@@ -1,6 +1,7 @@
 package com.example;
 
-import com.example.file.FileService;
+import com.example.model.Result;
+import com.example.service.FileService;
 import com.example.message.ErrorMessage;
 import com.example.message.InputMessage;
 import com.example.model.Customer;
@@ -9,6 +10,8 @@ import com.example.model.Purchase;
 import com.example.service.MessageService;
 import com.example.service.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
@@ -22,6 +25,8 @@ public class Application {
 
     public Application() {
         mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.enable(SerializationFeature.INDENT_OUTPUT);
     }
 
     public static void main(String[] args) {
