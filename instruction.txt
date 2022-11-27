@@ -1,0 +1,8 @@
+Скопировать исходный код в директорию:
+    $git clone https://github.com/f4natic/aikam_task.git
+
+Перейти в директорию проекта (где находится pom-файл) и выполнить:
+    $mvn package
+
+Подложить в директорию target файлы hibernate.properties, input.json и выполнить:
+    $java -jar <имя jar архива, не содержащего в названии original> <search or stat> <имя файла с входными параметрами>.json <имя выходного файла>.json
